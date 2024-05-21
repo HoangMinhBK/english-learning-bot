@@ -1,5 +1,7 @@
 import requests
 
+from utils.contants import DEFAULT_NUMBER_OF_NEW_FEEDS
+
 
 class NewsAPI:
     @staticmethod
@@ -11,7 +13,9 @@ class NewsAPI:
             return ["No news found."]
 
         summaries = []
-        for article in articles[:5]:  # Limiting to 5 articles for brevity
+        for article in articles[
+            :DEFAULT_NUMBER_OF_NEW_FEEDS
+        ]:  # Limiting to 5 articles for brevity
             title = article["title"]
             description = article["description"]
             url = article["url"]

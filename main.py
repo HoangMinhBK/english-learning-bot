@@ -1,10 +1,15 @@
 import nltk
 from telegram import Bot
+
 from config.settings import Settings
 from news.news_api import NewsAPI
 from utils.nltk_utils import NLTKUtils
 
-bot = Bot(token=Settings.TELEGRAM_TOKEN)
+BOT_TOKEN = Settings.TELEGRAM_TOKEN
+chat_id = Settings.TARGET_CHAT_ID
+NEW_API_KEY = Settings.NEWS_API_KEY
+GOOGLE_API_KEY = Settings.GOOGLE_API_KEY
+bot = Bot(token=BOT_TOKEN)
 
 # Download NLTK resources (required for WordNet)
 nltk.download("punkt")
@@ -12,14 +17,12 @@ nltk.download("wordnet")
 
 
 def send_news():
-    summaries = NewsAPI.get_news_summary(Settings.NEWS_API_KEY)
+    summaries = NewsAPI.get_news_summary(NEW_API_KEY)
 
     for title, description, url in summaries:
         # Send the news title and URL
         title_message = f"[{title}]({url})"
-        bot.send_message(
-            chat_id=Settings.TARGET_CHAT_ID, text=title_message, parse_mode="Markdown"
-        )
+        bot.send_message(chat_id=chat_id, text=title_message, parse_mode="Markdown")
 
         # Send the news description in chunks
         for chunk in chunks(
@@ -27,7 +30,7 @@ def send_news():
         ):  # Split description into chunks of max 4000 characters
             escaped_chunk = NLTKUtils.escape_markdown(chunk)
             bot.send_message(
-                chat_id=Settings.TARGET_CHAT_ID,
+                chat_id=chat_id,
                 text=escaped_chunk,
                 parse_mode="Markdown",
             )
@@ -41,7 +44,10 @@ def send_news():
             # Extract relevant information from meanings and concatenate into details_message
             meanings_str = "\n".join(
                 [
-                    f"- Definition: {meaning['definition']}\n  Synonyms: {meaning['synonyms']}\n  Example: {meaning['example']}\n  Pronunciation: {meaning['pronunciation']}"
+                    f"- Definition: {meaning['definition']}\n"
+                    f"  Synonyms: {meaning['synonyms']}\n"
+                    f"  Example: {meaning['example']}\n"
+                    f"  Pronunciation: {meaning['pronunciation']}"
                     for meaning in meanings
                 ]
             )
@@ -51,7 +57,7 @@ def send_news():
         for chunk in chunks(details_message, 4000):
             escaped_chunk = NLTKUtils.escape_markdown(chunk)
             bot.send_message(
-                chat_id=Settings.TARGET_CHAT_ID,
+                chat_id=chat_id,
                 text=escaped_chunk,
                 parse_mode="Markdown",
             )
